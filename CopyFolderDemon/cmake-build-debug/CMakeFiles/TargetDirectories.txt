@@ -1,0 +1,3 @@
+/home/kali/CLionProjects/CopyFolderDemon/cmake-build-debug/CMakeFiles/edit_cache.dir
+/home/kali/CLionProjects/CopyFolderDemon/cmake-build-debug/CMakeFiles/rebuild_cache.dir
+/home/kali/CLionProjects/CopyFolderDemon/cmake-build-debug/CMakeFiles/CopyFolderDemon.dir
