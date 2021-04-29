@@ -162,6 +162,9 @@ int GetListOfDirectories(char *source,char *target,struct ListOfElements* Elemen
     int NumberOfDirectories_Source=0;
     int NumberOfDirectories_Target=0;
 
+    //source = AddSlashToPath(source);
+    //target = AddSlashToPath(target);
+
     SourceDirectory = opendir(source);
     TargetDirectory = opendir(target);
 
@@ -244,12 +247,24 @@ int MergeDirectories(char *source, char *target)
         }
         if (output==-1)
         {
+            printf("found smt\n");
+
             char tmp_target[512];
             char tmp_source[512];
-            strcpy(tmp_target, target);
-            strcat(tmp_target, Elements.TargetDirectories[j]->d_name);
+
+            //dodanie / do wywalenia w inne miejsce
+            source = AddSlashToPath(source);
+            target = AddSlashToPath(target);
+            //-------
             strcpy(tmp_source, source);
-            strcat(tmp_source, Elements.TargetDirectories[j]->d_name);
+            strcpy(tmp_target, target);
+            strcat(tmp_source, Elements.SourceDirectories[j]->d_name);
+            strcat(tmp_target, Elements.SourceDirectories[j]->d_name);
+
+
+            printf("%s\n",tmp_source);
+            printf("%s\n",tmp_target);
+            printf("found smt1\n");
 
             struct stat mdata;
             stat(tmp_source, &mdata);
@@ -265,45 +280,45 @@ int MergeFiles(char *source, char *target)
     GetListOfDirectories(source, target, &Elements);
     chdir(target);
 
-    printf("%s\n",source);
-    printf("%s\n",target);
+    source = AddSlashToPath(source);
+    target = AddSlashToPath(target);
 
-    printf("  %d <-elementow\n",Elements.NumberOfSourceElements);
+    if(Elements.NumberOfTargetElements!=0) {
+        for (int i = 0; i < Elements.NumberOfTargetElements; i++) {
+            output = -1;
+            for (int ii = 0; ii < Elements.NumberOfSourceElements; ii++) {
+                if (strcmp(Elements.SourceElements[ii]->d_name, Elements.TargetElements[i]->d_name) == 0) {
+                    output = 0;
+                    //dodanie / do wywalenia w inne miejsce
 
-    for(int i=0; i<Elements.NumberOfTargetElements; i++)
-    {
-        output=-1;
-        for(int ii=0; ii<Elements.NumberOfSourceElements; ii++)
-        {
-            if(strcmp(Elements.SourceElements[ii]->d_name,Elements.TargetElements[i]->d_name) ==0)
-            {
-                output=0;
-                char tmp_target[512];
-                char tmp_source[512];
-                strcpy(tmp_target, target);
-                strcat(tmp_target, Elements.TargetElements[i]->d_name);
-                strcpy(tmp_source, source);
-                strcat(tmp_source, Elements.TargetElements[i]->d_name);
+                    //----
+                    char tmp_target[512];
+                    char tmp_source[512];
+                    strcpy(tmp_target, target);
+                    strcat(tmp_target, Elements.SourceElements[i]->d_name);
+                    strcpy(tmp_source, source);
+                    strcat(tmp_source, Elements.SourceElements[i]->d_name);
 
-                struct stat source_data, target_data;
-                stat(tmp_target, &target_data);
-                stat(tmp_source, &source_data);
+                    struct stat source_data, target_data;
+                    stat(tmp_target, &target_data);
+                    stat(tmp_source, &source_data);
 
-                if (source_data.st_mtime != target_data.st_mtime)
-                {
-                    printf("Cos skopiowano\n");
-                    Copy_y(tmp_source, tmp_target, 8192);
+                    if (source_data.st_mtime != target_data.st_mtime) {
+
+                        printf("Cos skopiowano\n");
+                        printf("%s\n", tmp_source);
+                        printf("%s\n", tmp_target);
+                        Copy_y(tmp_source, tmp_target, 4096);
+                    }
                 }
             }
-        }
-        if (output!=0)
-        {
-            unlink(Elements.TargetElements[i]->d_name);
-            GetListOfDirectories(source, target, &Elements);
-            i--;
+            if (output != 0) {
+                unlink(Elements.TargetElements[i]->d_name);
+                GetListOfDirectories(source, target, &Elements);
+                i--;
+            }
         }
     }
-
     for(int j=0; j<Elements.NumberOfSourceElements; j++)
     {
         output=-1;
@@ -316,12 +331,12 @@ int MergeFiles(char *source, char *target)
         }
         if (output==-1)
         {
-                char tmp_target[256];
-                char tmp_source[256];
+                char tmp_target[512];
+                char tmp_source[512];
                 strcpy(tmp_target, target);
-                strcat(tmp_target, Elements.TargetElements[j]->d_name);
+                strcat(tmp_target, Elements.SourceElements[j]->d_name);
                 strcpy(tmp_source, source);
-                strcat(tmp_source, Elements.TargetElements[j]->d_name);
+                strcat(tmp_source, Elements.SourceElements[j]->d_name);
 
                 Copy_y(tmp_source, tmp_target, 8192);
         }
@@ -337,6 +352,5 @@ int main(/*int argc,char *argv[]*/)
 
     printf("\n%s \n%s\n",source,target);
 
-    MergeFiles(source,target);
-
+    MergeDirectories(source,target);
 }
