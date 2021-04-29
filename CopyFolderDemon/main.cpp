@@ -12,10 +12,9 @@
 #include <signal.h>
 #include <unistd.h>
 #include <ftw.h>
+#include <features.h>
 
-#define _XOPEN_SOURCE 500
 #define O_BINARY _O_BINARY
-#define __USE_XOPEN_EXTENDED 500
 
 typedef struct ListOfElements
 {
@@ -29,21 +28,6 @@ typedef struct ListOfElements
     int NumberOfTargetDirectories;
 } ListOfElements;
 
-/*enum {
-    FTW_PHYS = 1,
-    #define FTW_PHYS FTW_PHYS
-    FTW_MOUNT = 2,
-    #define FTW_MOUNT FTW_MOUNT
-    FTW_CHIDR = 4,
-    #define FTW_CHIDR FTW_CHIDR
-    FTW_DEPTH = 8,
-    #define FTW_DEPTH FTW_DEPTH
-    #ifdef __USE_GNU
-    FTW_ACTIONRETVAL = 16
-    #define FTW_ACTIONRETVAL FTW_ACTIONRETVAL
-    #endif
-
-}; /*chuj wie  co tu sie dzieje do zobaczenia to jest xD*/
 
 int Copy_y(char *file0, char *file1, int size)
 {
@@ -195,9 +179,9 @@ int GetListOfDirectories(char *source,char *target,struct ListOfElements* Elemen
 
     return 1;
 }
-static int RemoveFile(const char *path, const struct stat *data, int type, struct FTW *ftw)
+static int RemoveFile(const char *path, const struct stat *data, int type)
 {
-    if(remove(path)<0)
+    if(remove(path) == -1)
     {
         return -1;
     }
@@ -205,7 +189,7 @@ static int RemoveFile(const char *path, const struct stat *data, int type, struc
 }
 int RemoveDirectories(char *path)
 {
-    nftw(path, RemoveFile, 10, FTW_MOUNT | FTW_DEPTH | FTW_PHYS);
+    ftw(path, RemoveFile, 10);
 }
 int MergeDirectories(char *source, char *target)
 {
@@ -347,10 +331,11 @@ int main(/*int argc,char *argv[]*/)
     //char *source = argv[1];
     //char *target = argv[2];
 
-    char *source = "/home/kali/CLionProjects/CopyFolderDemon/cmake-build-debug/TestObjects/SourceFolder";
-    char *target ="/home/kali/CLionProjects/CopyFolderDemon/cmake-build-debug/TestObjects/TargetFolder";
+    char *source ="/home/xd/Pulpit/copyfolder.d/CopyFolderDemon/cmake-build-debug/TestObjects/SourceFolder";
+    char *target ="/home/xd/Pulpit/copyfolder.d/CopyFolderDemon/cmake-build-debug/TestObjects/TargetFolder";
 
     printf("\n%s \n%s\n",source,target);
 
     MergeDirectories(source,target);
+    MergeFiles(source,target);
 }
