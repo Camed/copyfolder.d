@@ -1,1 +1,1 @@
-tresc pliku 0 w folderze SourceFolder ook
+tresc pliku 0 w katalogu sourcefolder
