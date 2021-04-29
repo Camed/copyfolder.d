@@ -12,7 +12,10 @@
 #include <signal.h>
 #include <unistd.h>
 #include <ftw.h>
+
 #define _XOPEN_SOURCE 500
+#define O_BINARY _O_BINARY
+#define __USE_XOPEN_EXTENDED 500
 
 typedef struct ListOfElements
 {
@@ -25,7 +28,8 @@ typedef struct ListOfElements
     int NumberOfSourceDirectories;
     int NumberOfTargetDirectories;
 } ListOfElements;
-/*typedef enum NftwFlags{
+
+/*enum {
     FTW_PHYS = 1,
     #define FTW_PHYS FTW_PHYS
     FTW_MOUNT = 2,
@@ -34,12 +38,12 @@ typedef struct ListOfElements
     #define FTW_CHIDR FTW_CHIDR
     FTW_DEPTH = 8,
     #define FTW_DEPTH FTW_DEPTH
-    #if_def __USE_GNU
+    #ifdef __USE_GNU
     FTW_ACTIONRETVAL = 16
     #define FTW_ACTIONRETVAL FTW_ACTIONRETVAL
     #endif
 
-}NftwFlags; chuj wie  co tu sie dzieje do zobaczenia to jest xD*/
+}; /*chuj wie  co tu sie dzieje do zobaczenia to jest xD*/
 
 int Copy_y(char *file0, char *file1, int size)
 {
@@ -77,37 +81,41 @@ char* MergeStrings(char * first,char * second)
     asprintf(&CreatedString,"%s%s",first,second);
     return CreatedString;
 }
-bool FileIsFile(const char *file)
+int FileIsFile(const char *file)
 {
+    printf("%s <- plik nazwa w fileisfile\n",file);
     struct stat FileStat;
-    if(stat(file,&FileStat)== -1)
+    if(lstat(file,&FileStat)==-1)
     {
         syslog(LOG_ERR,"Error occurred during FileIsFile %s", strerror(errno));
     }
-
-    if(S_ISREG(FileStat.st_mode))
+    lstat(file,&FileStat);
+    if(S_ISREG (FileStat.st_mode))
     {
-        return true;
+        printf("xd wraca1 \n");
+        return 1;
     }
     else
     {
-        return false;
+        printf("xd-wraca0\n");
+        return 0;
     }
 }
-bool FileIsDirectory(const char *file)
+int FileIsDirectory(const char *file)
 {
     struct stat FileStat;
-    if(stat(file,&FileStat)==-1)
+    if(lstat(file,&FileStat)==-1)
     {
         syslog(LOG_ERR,"Error occurred during FileIsDirectory %s", strerror(errno));
     }
-    if(S_ISDIR(FileStat.st_mode))
+    lstat(file,&FileStat);
+    if(S_ISDIR (FileStat.st_mode))
     {
-        return true;
+        return 1;
     }
     else
     {
-        return false;
+        return 0;
     }
 }
 char* AddSlashToPath(char *source)
@@ -123,17 +131,15 @@ int GetOnlyFiles(const struct dirent* Element)
 {
     return FileIsFile(Element->d_name);
 }
-int GetOnlyDirectoires(const struct dirent* Element)
+int GetOnlyDirectories(const struct dirent* Element)
 {
     return FileIsDirectory(Element->d_name);
 }
-
 
 int SearchForChanges(char *path)
 {
     char *PathOffset = (path);
 }
-
 
 void InitDeamon(char *source,char *target)
 {
@@ -161,16 +167,14 @@ int GetListOfDirectories(char *source,char *target,struct ListOfElements* Elemen
 
     chdir(source);
     NumberOfElements_Source = scandir(source, &SourceFilesList,GetOnlyFiles, alphasort);
-    NumberOfDirectories_Source = scandir(source, &SourceDirectoriesList,GetOnlyDirectoires, alphasort);
+    printf("  %d <-pliki \n",NumberOfElements_Source);
+    NumberOfDirectories_Source = scandir(source, &SourceDirectoriesList,GetOnlyDirectories, alphasort);
+    printf(" %d <-katalogi \n",NumberOfDirectories_Source);
     chdir(target);
-    NumberOfElements_Source = scandir(target, &TargetFilesList,GetOnlyFiles, alphasort);
-    NumberOfDirectories_Target = scandir(target, &TargetDirectoriesList,GetOnlyDirectoires, alphasort);
+    NumberOfElements_Target = scandir(target, &TargetFilesList,GetOnlyFiles, alphasort);
+    NumberOfDirectories_Target = scandir(target, &TargetDirectoriesList,GetOnlyDirectories, alphasort);
 
-    if(NumberOfElements_Source<0)
-    {
-        return 0;
-    }
-    else if(NumberOfElements_Target<0)
+    if(NumberOfElements_Source<0 || NumberOfElements_Target<0)
     {
         return 0;
     }
@@ -198,9 +202,9 @@ static int RemoveFile(const char *path, const struct stat *data, int type, struc
 }
 int RemoveDirectories(char *path)
 {
-    nftw(path, RemoveFile, 10, FTW_MOUNT | FTW_DEPTH | FTW PHYS))
+    nftw(path, RemoveFile, 10, FTW_MOUNT | FTW_DEPTH | FTW_PHYS);
 }
-int MergeDirectories(char *source, char* target)
+int MergeDirectories(char *source, char *target)
 {
     struct ListOfElements Elements;
     int output=-1;
@@ -220,8 +224,8 @@ int MergeDirectories(char *source, char* target)
         }
         if (output!=0)
         {
-            RemoveDirectories(Elements.TargetDirectoriesList[i]->d_name);
-            scandris(source, target, &Elements);
+            RemoveDirectories(Elements.TargetDirectories[i]->d_name);
+            GetListOfDirectories(source, target, &Elements);
             i--;
         }
     }
@@ -240,8 +244,8 @@ int MergeDirectories(char *source, char* target)
         }
         if (output==-1)
         {
-            char tmp_target[256];
-            char tmp_source[256];
+            char tmp_target[512];
+            char tmp_source[512];
             strcpy(tmp_target, target);
             strcat(tmp_target, Elements.TargetDirectories[j]->d_name);
             strcpy(tmp_source, source);
@@ -253,23 +257,29 @@ int MergeDirectories(char *source, char* target)
         }
     }
 }
-int MergeFiles(char* source, char* target)
+int MergeFiles(char *source, char *target)
 {
     struct ListOfElements Elements;
     int output=-1;
+
     GetListOfDirectories(source, target, &Elements);
     chdir(target);
+
+    printf("%s\n",source);
+    printf("%s\n",target);
+
+    printf("  %d <-elementow\n",Elements.NumberOfSourceElements);
 
     for(int i=0; i<Elements.NumberOfTargetElements; i++)
     {
         output=-1;
         for(int ii=0; ii<Elements.NumberOfSourceElements; ii++)
         {
-
             if(strcmp(Elements.SourceElements[ii]->d_name,Elements.TargetElements[i]->d_name) ==0)
             {
-                char tmp_target[256];
-                char tmp_source[256];
+                output=0;
+                char tmp_target[512];
+                char tmp_source[512];
                 strcpy(tmp_target, target);
                 strcat(tmp_target, Elements.TargetElements[i]->d_name);
                 strcpy(tmp_source, source);
@@ -281,6 +291,7 @@ int MergeFiles(char* source, char* target)
 
                 if (source_data.st_mtime != target_data.st_mtime)
                 {
+                    printf("Cos skopiowano\n");
                     Copy_y(tmp_source, tmp_target, 8192);
                 }
             }
@@ -293,13 +304,12 @@ int MergeFiles(char* source, char* target)
         }
     }
 
-    output=-1;
     for(int j=0; j<Elements.NumberOfSourceElements; j++)
     {
         output=-1;
         for(int jj=0; jj<Elements.NumberOfTargetElements; jj++)
         {
-            if(strcmp(Elements.SourceElements[i]->d_name,Elements.TargetElements[jj]->d_name) ==0)
+            if(strcmp(Elements.SourceElements[j]->d_name,Elements.TargetElements[jj]->d_name) ==0)
             {
                 output=0;
             }
@@ -309,9 +319,9 @@ int MergeFiles(char* source, char* target)
                 char tmp_target[256];
                 char tmp_source[256];
                 strcpy(tmp_target, target);
-                strcat(tmp_target, Elements.TargetElements[i]->d_name);
+                strcat(tmp_target, Elements.TargetElements[j]->d_name);
                 strcpy(tmp_source, source);
-                strcat(tmp_source, Elements.TargetElements[i]->d_name);
+                strcat(tmp_source, Elements.TargetElements[j]->d_name);
 
                 Copy_y(tmp_source, tmp_target, 8192);
         }
@@ -322,9 +332,11 @@ int main(/*int argc,char *argv[]*/)
     //char *source = argv[1];
     //char *target = argv[2];
 
-    char *source = "TestObjects/SourceFolder";
-    char *target ="TestObjects/DestinationFolder";
+    char *source = "/home/kali/CLionProjects/CopyFolderDemon/cmake-build-debug/TestObjects/SourceFolder";
+    char *target ="/home/kali/CLionProjects/CopyFolderDemon/cmake-build-debug/TestObjects/TargetFolder";
 
+    printf("\n%s \n%s\n",source,target);
 
+    MergeFiles(source,target);
 
 }

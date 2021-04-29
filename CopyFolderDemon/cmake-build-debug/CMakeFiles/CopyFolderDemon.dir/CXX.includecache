@@ -29,4 +29,10 @@ errno.h
 -
 syslog.h
 -
+signal.h
+-
+unistd.h
+-
+ftw.h
+-
 
