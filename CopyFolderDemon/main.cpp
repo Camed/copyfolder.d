@@ -125,13 +125,6 @@ int SearchForChanges(char *path)
     char *PathOffset = (path);
 }
 
-void InitDeamon(char *source,char *target)
-{
-    AddSlashToPath(source);
-    AddSlashToPath(target);
-
-
-}
 int GetListOfDirectories(char *source,char *target,struct ListOfElements* Elements)
 {
     DIR* SourceDirectory;
@@ -326,16 +319,50 @@ int MergeFiles(char *source, char *target)
         }
     }
 }
+void InitDeamon(char *source,char *target)
+{
+    MergeDirectories(source,target);
+    MergeFiles(source,target);
+
+    char *TmpSourcePath;
+    char *TmpTargetPath;
+
+    struct ListOfElements Elements;
+    GetListOfDirectories(source, target, &Elements);
+    for(int i=0;i<Elements.NumberOfSourceDirectories;i++)
+    {
+        if(strcmp(Elements.SourceDirectories[i]->d_name,".")!=0)
+        {
+            if(strcmp(Elements.SourceDirectories[i]->d_name,"..")!=0)
+            {
+                printf("%s\n",Elements.SourceDirectories[i]->d_name);
+                TmpSourcePath = source;
+                TmpTargetPath = target;
+
+                TmpSourcePath = AddSlashToPath(TmpSourcePath);
+                TmpTargetPath = AddSlashToPath(TmpTargetPath);
+
+                TmpSourcePath = MergeStrings(TmpSourcePath,Elements.SourceDirectories[i]->d_name);
+                TmpTargetPath = MergeStrings(TmpTargetPath,Elements.SourceDirectories[i]->d_name);
+                InitDeamon(TmpSourcePath,TmpTargetPath);
+            }
+        }
+
+    }
+
+
+
+}
+
 int main(/*int argc,char *argv[]*/)
 {
     //char *source = argv[1];
     //char *target = argv[2];
 
-    char *source ="/home/xd/Pulpit/copyfolder.d/CopyFolderDemon/cmake-build-debug/TestObjects/SourceFolder";
-    char *target ="/home/xd/Pulpit/copyfolder.d/CopyFolderDemon/cmake-build-debug/TestObjects/TargetFolder";
+    char *source ="/home/kali/CLionProjects/CopyFolderDemon/cmake-build-debug/TestObjects/SourceFolder";
+    char *target ="/home/kali/CLionProjects/CopyFolderDemon/cmake-build-debug/TestObjects/TargetFolder";
 
     printf("\n%s \n%s\n",source,target);
 
-    MergeDirectories(source,target);
-    MergeFiles(source,target);
+    InitDeamon(source,target);
 }
