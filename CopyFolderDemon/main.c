@@ -25,6 +25,8 @@
 // default - not recursive, 5 minutes delay (300 sec), 16384 bytes and more is regarded as a large file
 // 0x|2000|025/8 - '8' contains info about recursiveness, if recursive will be changed to 9
 int flags = 0x20000258;
+char *source;
+char *target;
 
 // contains list of files, directories in both source and target directories
 typedef struct ListOfElements {
@@ -40,13 +42,13 @@ typedef struct ListOfElements {
 
 
 // gathers delay time
-inline int getDelayTime() { return (flags >> 1) & 0x00007FFF; }
+int getDelayTime() { return (flags >> 1) & 0x00007FFF; }
 
 // gathers large file cap
-inline int largeFileSize() { return (flags >> 16) & 0x0000FFFF; }
+int largeFileSize() { return (flags >> 16) & 0x0000FFFF; }
 
 // checks if recursive
-inline int isRecursive() { return flags & 1; }
+int isRecursive() { return flags & 1; }
 
 // copy file copy0 (as path) to file1 (as path)
 // size -> buffer size
@@ -65,27 +67,23 @@ int Copy_y(char *file0, char *file1, int size) {
     BufforSpace = (unsigned char *) malloc(size * sizeof(unsigned char));
 
     input = open(file0, O_RDONLY);
-    output = open(file1, O_WRONLY | O_CREAT | O_TRUNC, 0664);
+    output = open(file1, O_WRONLY | O_CREAT | O_TRUNC, 0777);
 
     stat(file0,&InputFileStat);
     stat(file1,&OutputFileStat);
 
-    if (input == -1)
-    {
+    if (input == -1){
         syslog(LOG_ERR, "Error, could not open file: %s", strerror(errno));
         return 0xDEAD;
     }
-    if (output == -1)
-    {
+    if (output == -1){
         syslog(LOG_ERR, "Error, could not open file: %s", strerror(errno));
         close(input);
         return 0xBEAF;
     }
 
-    if(InputFileStat.st_size<=largeFileSize())
-    {
-        while ((t = read(input, BufforSpace, size)) > 0)
-        {
+    if(InputFileStat.st_size<=largeFileSize()){
+        while ((t = read(input, BufforSpace, size)) > 0){
             write(output, BufforSpace, t);
         }
         free(BufforSpace);
@@ -95,13 +93,10 @@ int Copy_y(char *file0, char *file1, int size) {
         close(output);
         syslog(LOG_INFO, "Small file copied successfully!");
     }
-    else
-    {
+    else{
         off_t offset,pa_offset;
         size_t length;
         length = InputFileStat.st_size;
-        offset = 4196;
-        pa_offset = 4196;
 
         addr = mmap(0, length, PROT_READ,MAP_SHARED, input, 0);
 
@@ -134,18 +129,15 @@ char* MergeStrings(char * first,char * second)  {
 //          0 if object is not a file
 int FileIsFile(const char *file) {
     struct stat FileStat;
-    if(lstat(file,&FileStat)==-1)
-    {
+    if(lstat(file,&FileStat)==-1){
         syslog(LOG_ERR,"Error occurred during determining object type: %s", strerror(errno));
     }
     lstat(file,&FileStat);
-    if(S_ISREG (FileStat.st_mode))
-    {
+    if(S_ISREG (FileStat.st_mode)){
         syslog(LOG_INFO, "Object type determining completed successfully! Type: file");
         return 1;
     }
-    else
-    {
+    else{
         syslog(LOG_INFO, "Object type determining completed successfully! Type: other");
         return 0;
     }
@@ -156,18 +148,15 @@ int FileIsFile(const char *file) {
 //          0 if object is not a folder
 int FileIsDirectory(const char *file){
     struct stat FileStat;
-    if(lstat(file,&FileStat)==-1)
-    {
+    if(lstat(file,&FileStat)==-1){
         syslog(LOG_ERR,"Error occurred during determining object type: %s", strerror(errno));
     }
     lstat(file,&FileStat);
-    if(S_ISDIR (FileStat.st_mode))
-    {
+    if(S_ISDIR (FileStat.st_mode)){
         syslog(LOG_INFO, "Object type determining completed successfully! Type: folder");
         return 1;
     }
-    else
-    {
+    else{
         syslog(LOG_INFO, "Object type determining completed successfully! Type: other");
         return 0;
     }
@@ -175,8 +164,7 @@ int FileIsDirectory(const char *file){
 
 // adds missing '/' to a path string
 char* AddSlashToPath(char *source) {
-    if(source[strlen(source)-1] != '/')
-    {
+    if(source[strlen(source)-1] != '/'){
         source= MergeStrings(source,"/");
         source[strlen(source)]='\0';
     }
@@ -184,8 +172,8 @@ char* AddSlashToPath(char *source) {
 }
 
 // gather objects which are only specified type
-inline int GetOnlyFiles(const struct dirent* Element) { return FileIsFile(Element->d_name); }
-inline int GetOnlyDirectories(const struct dirent* Element) { return FileIsDirectory(Element->d_name); }
+int GetOnlyFiles(const struct dirent* Element) { return FileIsFile(Element->d_name); }
+int GetOnlyDirectories(const struct dirent* Element) { return FileIsDirectory(Element->d_name); }
 
 // get list of directories, saves it into structure 'ListOfElements'.
 // RETURNS: 0 if nothing to be done
@@ -223,8 +211,7 @@ int GetListOfDirectories(char *source,char *target,struct ListOfElements* Elemen
     NumberOfDirectories_Target = scandir(target, &TargetDirectoriesList,GetOnlyDirectories, alphasort);
 
     // if nothing to be done
-    if(NumberOfElements_Source<0 || NumberOfElements_Target<0)
-    {
+    if(NumberOfElements_Source<0 || NumberOfElements_Target<0){
         return 0;
     }
 
@@ -247,8 +234,7 @@ int GetListOfDirectories(char *source,char *target,struct ListOfElements* Elemen
 // RETURNS: 0 if file deleted successfully
 //          -1 if error while deleting file
 int RemoveFile(const char *path, const struct stat *data, int type) {
-    if(remove(path) == -1)
-    {
+    if(remove(path) == -1){
         syslog(LOG_ERR, "File deletion error, could not delete file: %s", strerror(errno));
         return -1;
     }
@@ -269,19 +255,15 @@ int MergeDirectories(char *source, char *target) {
     GetListOfDirectories(source,target,&Elements);
     chdir(target);
 
-    for(int i=0; i<Elements.NumberOfTargetDirectories; i++)
-    {
+    for(int i=0; i<Elements.NumberOfTargetDirectories; i++){
         output=-1;
-        for(int ii=0; ii<Elements.NumberOfSourceDirectories; ii++)
-        {
+        for(int ii=0; ii<Elements.NumberOfSourceDirectories; ii++){
 
-            if(strcmp(Elements.SourceDirectories[ii]->d_name,Elements.TargetDirectories[i]->d_name) ==0)
-            {
+            if(strcmp(Elements.SourceDirectories[ii]->d_name,Elements.TargetDirectories[i]->d_name) ==0){
                 output=0;
             }
         }
-        if (output!=0)
-        {
+        if (output!=0){
             RemoveDirectories(Elements.TargetDirectories[i]->d_name);
             GetListOfDirectories(source, target, &Elements);
             i--;
@@ -290,19 +272,15 @@ int MergeDirectories(char *source, char *target) {
 
     output=-1;
 
-    for(int j=0; j<Elements.NumberOfSourceDirectories; j++)
-    {
+    for(int j=0; j<Elements.NumberOfSourceDirectories; j++){
         output=-1;
 
-        for(int jj=0; jj<Elements.NumberOfTargetDirectories; jj++)
-        {
-            if(strcmp(Elements.SourceDirectories[j]->d_name,Elements.TargetDirectories[jj]->d_name) ==0)
-            {
+        for(int jj=0; jj<Elements.NumberOfTargetDirectories; jj++){
+            if(strcmp(Elements.SourceDirectories[j]->d_name,Elements.TargetDirectories[jj]->d_name) ==0){
                 output=0;
             }
         }
-        if (output==-1)
-        {
+        if (output==-1){
             char tmp_target[512];
             char tmp_source[512];
 
@@ -373,18 +351,14 @@ int MergeFiles(char *source, char *target) {
             }
         }
     }
-    for(int j=0; j<Elements.NumberOfSourceElements; j++)
-    {
+    for(int j=0; j<Elements.NumberOfSourceElements; j++){
         output=-1;
-        for(int jj=0; jj<Elements.NumberOfTargetElements; jj++)
-        {
-            if(strcmp(Elements.SourceElements[j]->d_name,Elements.TargetElements[jj]->d_name) ==0)
-            {
+        for(int jj=0; jj<Elements.NumberOfTargetElements; jj++){
+            if(strcmp(Elements.SourceElements[j]->d_name,Elements.TargetElements[jj]->d_name) ==0){
                 output=0;
             }
         }
-        if (output==-1)
-        {
+        if (output==-1){
             char tmp_target[512];
             char tmp_source[512];
             strcpy(tmp_target, target);
@@ -408,12 +382,9 @@ void InitDeamon(char *source,char *target) {
 
     struct ListOfElements Elements;
     GetListOfDirectories(source, target, &Elements);
-    for(int i=0;i<Elements.NumberOfSourceDirectories;i++)
-    {
-        if(strcmp(Elements.SourceDirectories[i]->d_name,".")!=0)
-        {
-            if(strcmp(Elements.SourceDirectories[i]->d_name,"..")!=0)
-            {
+    for(int i=0;i<Elements.NumberOfSourceDirectories;i++){
+        if(strcmp(Elements.SourceDirectories[i]->d_name,".")!=0){
+            if(strcmp(Elements.SourceDirectories[i]->d_name,"..")!=0){
                 printf("%s\n",Elements.SourceDirectories[i]->d_name);
                 TmpSourcePath = source;
                 TmpTargetPath = target;
@@ -426,16 +397,24 @@ void InitDeamon(char *source,char *target) {
                 InitDeamon(TmpSourcePath,TmpTargetPath);
             }
         }
-
+    }
+}
+int wake_handler(int SignalNumber){
+    syslog(LOG_INFO,"Handling Signal SIGUSR1");
+    if(isRecursive()) {
+        InitDeamon(source, target);
+    }
+    else {
+        MergeFiles(source,target);
     }
 }
 
 int main(int argc, char** argv) {
-    char *source = NULL;
-    char *target = NULL;
+    source = malloc(sizeof(char)*1000);
+    target = malloc(sizeof (char)*1000);
 
     int state = 0;
-    while((state = getopt(argc, argv, "s:d:R:t:b")) != -1) {
+    while((state = getopt(argc, argv, "s:d:Rt:b:")) != -1) {
         switch(state){
             case 's':
                 source = optarg;
@@ -447,27 +426,23 @@ int main(int argc, char** argv) {
                 flags |= 0x00000001;
                 break;
             case 't':
-                if(optarg <= 0 || optarg > 16383) {
+                if(atoi(optarg) <= 0 || atoi(optarg) > 16383) {
                     fprintf(stderr, "Option -t argument needs to be in range <1, 16383>.");
                 }
                 else {
-                    flags = (flags & ~(0x7FFF << 1) | (optarg << 1));
+                    flags = (flags & ~(0x7FFF << 1) | (atoi(optarg) << 1));
                 }
                 break;
             case 'b':
-                if(optarg <= 0 || optarg > 32767){
+                if (atoi(optarg) <= 0 || atoi(optarg) > 32767) {
                     fprintf(stderr, "Option -t argument needs to be in range <1, 32767>.");
-                }
-                else {
-                    flags = (flags & ~(0xFFFF << 16) | (optarg << 16));
+                } else {
+                    flags = (flags & ~(0xFFFF << 16) | (atoi(optarg) << 16));
                 }
                 break;
             case '?':
                 if(optopt == 's' || optopt == 'd' || optopt == 't' || optopt == 'b'){
                     fprintf(stderr, "-%c requires an argument.\n", optopt);
-                }
-                else if(isprint(optopt)){
-                    fprintf(stderr, "-%c - unrecognized.\n", optopt);
                 }
                 else {
                     fprintf(stderr, "Unknown: -%c\n", optopt);
@@ -482,7 +457,7 @@ int main(int argc, char** argv) {
         fprintf(stderr, "No args specified!\nUsage:\n\tcopyfolder.d -s <source_directory> -d <target_directory> {-R} {-t <delay_seconds>} {-b <size_in_bytes>}\n");
         exit(EXIT_FAILURE);
     }
-
+    printf("siema");
     source = AddSlashToPath(source);
     target = AddSlashToPath(target);
 
@@ -490,10 +465,14 @@ int main(int argc, char** argv) {
     pid_t pid, sid;
     pid = fork();
 
-    if(pid <= 0) exit(EXIT_FAILURE);
-    else exit(EXIT_SUCCESS);
+    if(pid < 0){
+        exit(EXIT_FAILURE);
+    }
+    else if(pid >0){
+        exit(EXIT_SUCCESS);
+    }
 
-    unmask(0);
+    umask(0);
 
     sid = setsid();
     if(sid < 0) {
@@ -502,28 +481,28 @@ int main(int argc, char** argv) {
     }
 
     if((chdir("/")) < 0) {
-        syslog(LOG_ERR, "Error while changing current working directory: %s", strerror(errno))
+        syslog(LOG_ERR, "Error while changing current working directory: %s", strerror(errno));
         exit(EXIT_FAILURE);
     }
-
     close(STDIN_FILENO);
     close(STDOUT_FILENO);
     close(STDERR_FILENO);
-
     syslog(LOG_INFO, "Daemon running, initialized successfully!");
     if(signal(SIGUSR1, wake_handler) == -1) {
         syslog(LOG_ERR, "FAILURE! Signal error %s", strerror(errno));
     }
 
     while(1){
+        syslog(LOG_INFO,"Currently running!");
         if(isRecursive()) {
             InitDeamon(source, target);
         }
         else {
-            MergeFiles();
+            MergeFiles(source,target);
         }
-        sleep(getDelayTime())
+        sleep(getDelayTime());
     }
 
     exit(EXIT_SUCCESS);
 }
+
