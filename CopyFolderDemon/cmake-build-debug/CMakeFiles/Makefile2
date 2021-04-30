@@ -63,16 +63,16 @@ RM = /home/kali/Desktop/clion-2021.1.1/bin/cmake/linux/bin/cmake -E rm -f
 EQUALS = =
 
 # The top-level source directory on which CMake was run.
-CMAKE_SOURCE_DIR = /home/kali/CLionProjects/CopyFolderDemon
+CMAKE_SOURCE_DIR = /home/kali/CLionProjects/untitled1
 
 # The top-level build directory on which CMake was run.
-CMAKE_BINARY_DIR = /home/kali/CLionProjects/CopyFolderDemon/cmake-build-debug
+CMAKE_BINARY_DIR = /home/kali/CLionProjects/untitled1/cmake-build-debug
 
 #=============================================================================
 # Directory level rules for the build root directory
 
 # The main recursive "all" target.
-all: CMakeFiles/CopyFolderDemon.dir/all
+all: CMakeFiles/untitled1.dir/all
 
 .PHONY : all
 
@@ -82,36 +82,36 @@ preinstall:
 .PHONY : preinstall
 
 # The main recursive "clean" target.
-clean: CMakeFiles/CopyFolderDemon.dir/clean
+clean: CMakeFiles/untitled1.dir/clean
 
 .PHONY : clean
 
 #=============================================================================
-# Target rules for target CMakeFiles/CopyFolderDemon.dir
+# Target rules for target CMakeFiles/untitled1.dir
 
 # All Build rule for target.
-CMakeFiles/CopyFolderDemon.dir/all:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/CopyFolderDemon.dir/build.make CMakeFiles/CopyFolderDemon.dir/depend
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/CopyFolderDemon.dir/build.make CMakeFiles/CopyFolderDemon.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/kali/CLionProjects/CopyFolderDemon/cmake-build-debug/CMakeFiles --progress-num=1,2 "Built target CopyFolderDemon"
-.PHONY : CMakeFiles/CopyFolderDemon.dir/all
+CMakeFiles/untitled1.dir/all:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/untitled1.dir/build.make CMakeFiles/untitled1.dir/depend
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/untitled1.dir/build.make CMakeFiles/untitled1.dir/build
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/kali/CLionProjects/untitled1/cmake-build-debug/CMakeFiles --progress-num=1,2 "Built target untitled1"
+.PHONY : CMakeFiles/untitled1.dir/all
 
 # Build rule for subdir invocation for target.
-CMakeFiles/CopyFolderDemon.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/kali/CLionProjects/CopyFolderDemon/cmake-build-debug/CMakeFiles 2
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 CMakeFiles/CopyFolderDemon.dir/all
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/kali/CLionProjects/CopyFolderDemon/cmake-build-debug/CMakeFiles 0
-.PHONY : CMakeFiles/CopyFolderDemon.dir/rule
+CMakeFiles/untitled1.dir/rule: cmake_check_build_system
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/kali/CLionProjects/untitled1/cmake-build-debug/CMakeFiles 2
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 CMakeFiles/untitled1.dir/all
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/kali/CLionProjects/untitled1/cmake-build-debug/CMakeFiles 0
+.PHONY : CMakeFiles/untitled1.dir/rule
 
 # Convenience name for target.
-CopyFolderDemon: CMakeFiles/CopyFolderDemon.dir/rule
+untitled1: CMakeFiles/untitled1.dir/rule
 
-.PHONY : CopyFolderDemon
+.PHONY : untitled1
 
 # clean rule for target.
-CMakeFiles/CopyFolderDemon.dir/clean:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/CopyFolderDemon.dir/build.make CMakeFiles/CopyFolderDemon.dir/clean
-.PHONY : CMakeFiles/CopyFolderDemon.dir/clean
+CMakeFiles/untitled1.dir/clean:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/untitled1.dir/build.make CMakeFiles/untitled1.dir/clean
+.PHONY : CMakeFiles/untitled1.dir/clean
 
 #=============================================================================
 # Special targets to cleanup operation of make.

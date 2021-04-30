@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.19)
-project(CopyFolderDemon)
+project(untitled1 C)
 
-set(CMAKE_CXX_STANDARD 14)
+set(CMAKE_C_STANDARD 11)
 
-add_executable(CopyFolderDemon main.cpp)
+add_executable(untitled1 main.c)

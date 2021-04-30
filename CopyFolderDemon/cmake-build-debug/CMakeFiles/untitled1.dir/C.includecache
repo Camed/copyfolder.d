@@ -1,0 +1,44 @@
+#IncludeRegexLine: ^[ 	]*[#%][ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+/home/kali/CLionProjects/untitled1/main.c
+stdio.h
+-
+stdlib.h
+-
+sys/types.h
+-
+sys/stat.h
+-
+fcntl.h
+-
+string.h
+-
+unistd.h
+-
+time.h
+-
+dirent.h
+-
+errno.h
+-
+syslog.h
+-
+signal.h
+-
+unistd.h
+-
+ftw.h
+-
+features.h
+-
+utime.h
+-
+sys/mman.h
+-
+
